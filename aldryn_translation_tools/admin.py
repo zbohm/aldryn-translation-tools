@@ -5,7 +5,8 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.forms import widgets
 from django.utils.encoding import force_text
-from django.utils.translation import ugettext as _
+from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
 
 from cms.utils.i18n import get_current_language
 from cms.utils.urlutils import admin_reverse
@@ -27,8 +28,6 @@ class LinkedRelatedInlineMixin(object):
 
     class ReverseLink:
 
-        allow_tags = True
-
         def __init__(self, display_link="link"):
             self.display_link = display_link
             self.short_description = display_link
@@ -40,11 +39,11 @@ class LinkedRelatedInlineMixin(object):
                     app_label=obj._meta.app_label.lower(),
                     model_name=model_name,
                 ), args=(obj.id, ))
-            return '<a href="{admin_link}" title="{title}">{link}</a>'.format(
+            return mark_safe('<a href="{admin_link}" title="{title}">{link}</a>'.format(
                 admin_link=admin_link,
                 title=_('Click to view or edit this {0}').format(
                     obj._meta.verbose_name),
-                link=getattr(obj, self.display_link))
+                link=getattr(obj, self.display_link)))
 
     def __init__(self, parent_model, admin_site):
         self.original_fields = self.get_fields_list(None)
@@ -129,9 +128,8 @@ class AllTranslationsMixin(object):
                 title=title,
             )
             langs.append(link)
-        return ''.join(langs)
-    all_translations.short_description = 'Translations'
-    all_translations.allow_tags = True
+        return mark_safe(''.join(langs))
+    all_translations.short_description = _('Translations')
 
     def get_list_display(self, request):
         """
